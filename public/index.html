@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Interaction</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <div class="step" id="step1">
+      <h2>1) Generate Code</h2>
+      <span>
+        Caso não possua, é necessario criar o ClientID:
+      </span>
+
+      <button onclick="generateCode()">Generate Code</button>
+    </div>
+
+    <div class="step" id="step2">
+      <h2>2) Authorize Store</h2>
+      <span>
+        Caso tenha criado com o link o codigo de cliente é: insira no portal do ifood quando solicitado
+      </span>
+      <input id="userCode" placeholder="Current User's Code" readonly>
+      <button onclick="authorizeStore()">Authorize Store</button>
+    </div>
+    <div class="step" id="step3">
+      <h2>3) Save Authorization Code</h2>
+      <span>
+        Coloque o código de autorização no campo abaixo:
+      </span>
+      <input id="authCode" placeholder="Enter Authorization Code">
+      <button onclick="saveAuthCode()">Save Authorization Code</button>
+    </div>
+    <div class="step" id="step4">
+      <h2>4) Generate Access Token</h2>
+      <span>Gere o token de acesso</span>
+      <input id="accessToken" placeholder="Access Token" readonly>
+      <button onclick="generateAccessToken()">Generate Access Token</button>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
