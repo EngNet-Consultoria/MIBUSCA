@@ -1,0 +1,44 @@
+Total Reservas
+- Ano
+- Receita c/ taxas
+- Ticket Médio Diária
+- Data
+- Nome do Mês
+- Dia
+Métrica atual
+- Segmentos
+- Localidade
+- Nota Média
+- Imóvel
+- Sigla Condomínio
+- Reservas
+- Ticket Médio
+- Nota
+%Ocupação
+- Total de Reservas Diretas (obtida atraves de canais)
+- Agente
+- Total Reservas
+Personalizar
+- Canais
+- Ticket Médio por Hóspede = reserveTotal/guestTotalcount
+- Total Hóspedes
+- Local
+- País 
+- Região
+- Estado 
+- Cidade, UF
+- Clientes
+- Mês
+- Nome do Dia
+- Total de Criações 
+
+IDEIA BANCO DE DADOS
+
+TABELA 1: 
+Ano
+RECEITA COM taxas
+ticket medio diario = reserveTotal/ numero de noites
+Data
+Nome Imovel
+Total de hospedes
+Clientes
