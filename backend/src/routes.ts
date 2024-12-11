@@ -8,12 +8,12 @@ interface AuthDataRow {
     auth_code?: string;
     access_token?: string;
 }
-
+//tentando fazer a conexão da api e integração com o database
 export async function routes(app: FastifyInstance) {
     app.post('/api/generate-code', async (req: FastifyRequest, res: FastifyReply) => {
-        // Mock: Generate user code and verifier
-        const userCode = '12345';
-        const verifier = 'abcde';
+    
+        const userCode = '12345'; //provisorio, para a criação da api
+        const verifier = 'abcde'; //provisorio, para a criação da api
         const authURL = 'https://ifood-auth-url.com';
 
         await db.execute('INSERT INTO auth_data (user_code, verifier, auth_url) VALUES (?, ?, ?)', [userCode, verifier, authURL]);
