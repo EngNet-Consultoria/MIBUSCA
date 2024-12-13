@@ -11,8 +11,11 @@ import { handlePrismaError } from "./middlewares/handlePrismaError.middleware";
 import { handleCommonError } from "./middlewares/handleCommonError.middleware";
 
 import lojas from "./routes/Lojas.routes";
+<<<<<<< HEAD
 import credenciais from "./routes/credenciais.routes";
 import vendas from "./routes/Vendas.routes";
+=======
+>>>>>>> main
 
 
 dotenv.config();
@@ -23,10 +26,16 @@ app.use(express.json());
 app.use(cors());
 app.use(helmet());
 
+<<<<<<< HEAD
 // Incluindo as rotas
 app.use("/lojas", lojas);
 app.use("/credenciais", credenciais);
 app.use("/vendas", vendas);
+=======
+// Include your routes here
+app.use("/lojas", lojas);
+
+>>>>>>> main
 
 app.use(handleZodError);
 app.use(handlePrismaError);
