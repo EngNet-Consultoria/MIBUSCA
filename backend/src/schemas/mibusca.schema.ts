@@ -34,7 +34,7 @@ export const VendasSchema = z.object({
   data_hora: z.string().transform((str) => new Date(str)), // Converte TIMESTAMP para string
   valor_total: z.number().positive(),
   ticket_medio: z.number().optional(),
-  tipo_cliente: z.enum(['Novo', 'Recorrente']),
+  tipo_cliente: z.number().int().min(0).max(1), // 0 = novo, 1 = recorrente 
   cancelada: z.boolean().optional().default(false),
   promocao_aplicada: z.boolean().optional().default(false),
   roi: z.number().optional()

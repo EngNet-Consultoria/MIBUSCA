@@ -1,3 +1,5 @@
+CREATE DATABASE IF NOT EXISTS MIBUSCA;
+USE MIBUSCA;
 CREATE TABLE token_validation (
     id SERIAL PRIMARY KEY,
     client_id VARCHAR(255) NOT NULL,
@@ -11,42 +13,49 @@ CREATE TABLE token_validation (
     verification_url TEXT,
     verification_url_full TEXT
 );
+
 CREATE TABLE lojas (
-    id_loja SERIAL PRIMARY KEY,
+    id_loja INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
-    status VARCHAR(50) NOT NULL CHECK (status IN ('Aberta', 'Fechada por erro', 'Fora do horário')),
+    status INT NOT NULL CHECK (status IN (0, 1, 2)), -- 0: Aberta, 1: Fechada por erro, 2: Fora do horário
     horario_operacao TIME,
-    data_criacao DATE DEFAULT CURRENT_DATE,
-    localizacao GEOGRAPHY(Point, 4326) 
+    data_criacao DATE DEFAULT (CURRENT_DATE), 
+    localizacao POINT 
 );
+
+-- Tabela de vendas
 CREATE TABLE vendas (
-    id_venda SERIAL PRIMARY KEY,
-    id_loja INT REFERENCES lojas(id_loja),
+    id_venda INT AUTO_INCREMENT PRIMARY KEY,
+    id_loja INT,
     data_hora TIMESTAMP NOT NULL,
     valor_total DECIMAL(10, 2) NOT NULL,
     ticket_medio DECIMAL(10, 2),
-    tipo_cliente VARCHAR(20) CHECK (tipo_cliente IN ('Novo', 'Recorrente')),
+    tipo_cliente INT CHECK (tipo_cliente IN (0, 1)), 
     cancelada BOOLEAN DEFAULT FALSE,
     promocao_aplicada BOOLEAN DEFAULT FALSE,
-    roi DECIMAL(10, 2) 
+    roi DECIMAL(10, 2),
+    FOREIGN KEY (id_loja) REFERENCES lojas(id_loja)
 );
+
+-- Tabela de operações
 CREATE TABLE operacao (
-    id_operacao SERIAL PRIMARY KEY,
-    id_loja INT REFERENCES lojas(id_loja),
+    id_operacao INT AUTO_INCREMENT PRIMARY KEY,
+    id_loja INT,
     data_hora_inicio TIMESTAMP NOT NULL,
     data_hora_fim TIMESTAMP,
-    tempo_total INTERVAL GENERATED ALWAYS AS (data_hora_fim - data_hora_inicio) STORED,
+    tempo_total INT GENERATED ALWAYS AS (TIMESTAMPDIFF(SECOND, data_hora_inicio, data_hora_fim)) STORED,
     cancelamentos INT DEFAULT 0,
-    erros_plataforma INT 
+    erros_plataforma INT,
+    FOREIGN KEY (id_loja) REFERENCES lojas(id_loja)
 );
+
+-- Tabela de clientes
 CREATE TABLE clientes (
-    id_cliente SERIAL PRIMARY KEY,
-    nome VARCHAR(255), -- pseudônimo
-    id_loja INT REFERENCES lojas(id_loja),
-    distancia_raio DECIMAL(5, 2), -- ta em km
+    id_cliente INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255), 
+    id_loja INT,
+    distancia_raio DECIMAL(5, 2), 
     tipo VARCHAR(20) CHECK (tipo IN ('Potencial', 'Real')),
-    data_ultima_compra DATE
+    data_ultima_compra DATE,
+    FOREIGN KEY (id_loja) REFERENCES lojas(id_loja)
 );
-
-
-
