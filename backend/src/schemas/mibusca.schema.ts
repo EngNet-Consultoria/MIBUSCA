@@ -46,7 +46,7 @@ export const OperacaoSchema = z.object({
   data_hora_fim: z.string().transform((str) => new Date(str)).optional(),
   tempo_total: z.number().optional(),
   cancelamentos: z.number().int().optional().default(0),
-  erros_plataforma: z.number().int().optional(),
+  erros_plataforma: z.number().int()
 });
 
 // Schema de Clientes
@@ -55,7 +55,7 @@ export const ClientesSchema = z.object({
   nome: z.string().max(255).optional(),
   id_loja: z.number().int().positive(),
   distancia_raio: z.number().positive(),
-  tipo: z.enum(["Potencial", "Real"]),
+  tipo: z.enum(["0", "1"]).transform(Number),
   data_ultima_compra: z.string().transform((str) => new Date(str)).optional(),
 });
 

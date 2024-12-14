@@ -1,5 +1,7 @@
 CREATE DATABASE IF NOT EXISTS MIBUSCA;
+
 USE MIBUSCA;
+
 CREATE TABLE token_validation (
     id SERIAL PRIMARY KEY,
     client_id VARCHAR(255) NOT NULL,
@@ -19,8 +21,8 @@ CREATE TABLE lojas (
     nome VARCHAR(255) NOT NULL,
     status INT NOT NULL CHECK (status IN (0, 1, 2)), -- 0: Aberta, 1: Fechada por erro, 2: Fora do horário
     horario_operacao TIME,
-    data_criacao DATE DEFAULT (CURRENT_DATE), 
-    localizacao POINT 
+    data_criacao DATE DEFAULT(CURRENT_DATE),
+    localizacao POINT
 );
 
 -- Tabela de vendas
@@ -30,11 +32,11 @@ CREATE TABLE vendas (
     data_hora TIMESTAMP NOT NULL,
     valor_total DECIMAL(10, 2) NOT NULL,
     ticket_medio DECIMAL(10, 2),
-    tipo_cliente INT CHECK (tipo_cliente IN (0, 1)), 
+    tipo_cliente INT CHECK (tipo_cliente IN (0, 1)),
     cancelada BOOLEAN DEFAULT FALSE,
     promocao_aplicada BOOLEAN DEFAULT FALSE,
     roi DECIMAL(10, 2),
-    FOREIGN KEY (id_loja) REFERENCES lojas(id_loja)
+    FOREIGN KEY (id_loja) REFERENCES lojas (id_loja)
 );
 
 -- Tabela de operações
@@ -43,19 +45,25 @@ CREATE TABLE operacao (
     id_loja INT,
     data_hora_inicio TIMESTAMP NOT NULL,
     data_hora_fim TIMESTAMP,
-    tempo_total INT GENERATED ALWAYS AS (TIMESTAMPDIFF(SECOND, data_hora_inicio, data_hora_fim)) STORED,
+    tempo_total INT GENERATED ALWAYS AS (
+        TIMESTAMPDIFF(
+            SECOND,
+            data_hora_inicio,
+            data_hora_fim
+        )
+    ) STORED,
     cancelamentos INT DEFAULT 0,
     erros_plataforma INT,
-    FOREIGN KEY (id_loja) REFERENCES lojas(id_loja)
+    FOREIGN KEY (id_loja) REFERENCES lojas (id_loja)
 );
 
 -- Tabela de clientes
 CREATE TABLE clientes (
     id_cliente INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(255), 
+    nome VARCHAR(255),
     id_loja INT,
-    distancia_raio DECIMAL(5, 2), 
-    tipo VARCHAR(20) CHECK (tipo IN ('Potencial', 'Real')),
+    distancia_raio DECIMAL(5, 2),
+    tipo_cliente INT CHECK (tipo_cliente IN (0, 1)), -- Alterado para corresponder à tabela de vendas
     data_ultima_compra DATE,
-    FOREIGN KEY (id_loja) REFERENCES lojas(id_loja)
+    FOREIGN KEY (id_loja) REFERENCES lojas (id_loja)
 );
