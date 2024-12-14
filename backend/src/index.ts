@@ -14,6 +14,7 @@ import lojas from "./routes/Lojas.routes";
 import credenciais from "./routes/credenciais.routes";
 import vendas from "./routes/Vendas.routes";
 import clientes from "./routes/Clientes.routes"
+import operacao from "./routes/operacao.routes"
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use("/lojas", lojas);
 app.use("/credenciais", credenciais);
 app.use("/vendas", vendas);
 app.use("/clientes",clientes); 
+app.use("/operacao", operacao)
 
 app.use(handleZodError);
 app.use(handlePrismaError);
