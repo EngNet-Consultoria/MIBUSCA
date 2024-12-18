@@ -1,9 +1,15 @@
+--NÃO USAR ESSE BANCO DE DADOS, JA MUDEI TUDO
+--NÃO USAR ESSE BANCO DE DADOS, JA MUDEI TUDO
+--NÃO USAR ESSE BANCO DE DADOS, JA MUDEI TUDO
+--NÃO USAR ESSE BANCO DE DADOS, JA MUDEI TUDO
+--NÃO USAR ESSE BANCO DE DADOS, JA MUDEI TUDO
+--NÃO USAR ESSE BANCO DE DADOS, JA MUDEI TUDO
 CREATE DATABASE IF NOT EXISTS MIBUSCA;
 
 USE MIBUSCA;
 
 CREATE TABLE token_validation (
-    id SERIAL PRIMARY KEY,
+    id PRIMARY KEY, -- Mudado para UUID
     client_id VARCHAR(255) NOT NULL,
     client_secret VARCHAR(255) NOT NULL,
     access_token TEXT NOT NULL,
@@ -17,7 +23,7 @@ CREATE TABLE token_validation (
 );
 
 CREATE TABLE lojas (
-    id_loja INT AUTO_INCREMENT PRIMARY KEY,
+    id_loja VARCHAR(36) PRIMARY KEY, -- Mudado para UUID
     nome VARCHAR(255) NOT NULL,
     status INT NOT NULL CHECK (status IN (0, 1, 2)), -- 0: Aberta, 1: Fechada por erro, 2: Fora do horário
     horario_operacao TIME,
@@ -27,8 +33,8 @@ CREATE TABLE lojas (
 
 -- Tabela de vendas
 CREATE TABLE vendas (
-    id_venda INT AUTO_INCREMENT PRIMARY KEY,
-    id_loja INT,
+    id_venda VARCHAR(36) PRIMARY KEY, -- Mudado para UUID
+    id_loja VARCHAR(36), -- Mudado para UUID
     data_hora TIMESTAMP NOT NULL,
     valor_total DECIMAL(10, 2) NOT NULL,
     ticket_medio DECIMAL(10, 2),
@@ -41,8 +47,8 @@ CREATE TABLE vendas (
 
 -- Tabela de operações
 CREATE TABLE operacao (
-    id_operacao INT AUTO_INCREMENT PRIMARY KEY,
-    id_loja INT,
+    id_operacao VARCHAR(36) PRIMARY KEY, -- Mudado para UUID
+    id_loja VARCHAR(36), -- Mudado para UUID
     data_hora_inicio TIMESTAMP NOT NULL,
     data_hora_fim TIMESTAMP,
     tempo_total INT GENERATED ALWAYS AS (
@@ -59,9 +65,9 @@ CREATE TABLE operacao (
 
 -- Tabela de clientes
 CREATE TABLE clientes (
-    id_cliente INT AUTO_INCREMENT PRIMARY KEY,
+    id_cliente VARCHAR(36) PRIMARY KEY, -- Mudado para UUID
     nome VARCHAR(255),
-    id_loja INT,
+    id_loja VARCHAR(36), -- Mudado para UUID
     distancia_raio DECIMAL(5, 2),
     tipo_cliente INT CHECK (tipo_cliente IN (0, 1)), -- Alterado para corresponder à tabela de vendas
     data_ultima_compra DATE,

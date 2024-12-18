@@ -71,7 +71,7 @@ async function getValidToken(): Promise<TokenData | null> {
 async function fetchAccessToken(): Promise<TokenData | null> {
   try {
     const data = qs.stringify({
-      grantType: 'client_credentials',
+      grantType: 'client_credentials',  
       clientId: CLIENT_ID,
       clientSecret: CLIENT_SECRET,
     });
@@ -87,16 +87,21 @@ async function fetchAccessToken(): Promise<TokenData | null> {
       const { accessToken, expiresIn } = response.data;
       const expirationDate = new Date(Date.now() + expiresIn * 1000)
         .toISOString()
-        .slice(0, 19)
+        .slice(0, 19) // Formato TIMESTAMP
         .replace('T', ' '); // Formato TIMESTAMP
       console.log('Token obtido com sucesso:', accessToken);
-      return { accessToken, expirationDate }; // Retorna `expirationDate` como string
+      return { accessToken, expirationDate };
     } else {
       console.error('Erro ao obter o token:', response.statusText);
       return null;
     }
   } catch (error) {
-    console.error('Erro na requisição:', (error as Error).message);
+    if (axios.isAxiosError(error)) {
+      // Exibe detalhes sobre o erro no Axios
+      console.error('Erro na requisição:', error.response?.data || error.message);
+    } else {
+      console.error('Erro desconhecido:', (error as Error).message);
+    }
     return null;
   }
 }
