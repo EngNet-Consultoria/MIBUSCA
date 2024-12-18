@@ -1,75 +1,80 @@
---NÃO USAR ESSE BANCO DE DADOS, JA MUDEI TUDO
---NÃO USAR ESSE BANCO DE DADOS, JA MUDEI TUDO
---NÃO USAR ESSE BANCO DE DADOS, JA MUDEI TUDO
---NÃO USAR ESSE BANCO DE DADOS, JA MUDEI TUDO
---NÃO USAR ESSE BANCO DE DADOS, JA MUDEI TUDO
---NÃO USAR ESSE BANCO DE DADOS, JA MUDEI TUDO
 CREATE DATABASE IF NOT EXISTS MIBUSCA;
 
 USE MIBUSCA;
 
-CREATE TABLE token_validation (
-    id PRIMARY KEY, -- Mudado para UUID
-    client_id VARCHAR(255) NOT NULL,
-    client_secret VARCHAR(255) NOT NULL,
-    access_token TEXT NOT NULL,
-    token_expiration TIMESTAMP NOT NULL,
-    refresh_token TEXT NOT NULL,
-    user_code VARCHAR(255),
-    authorization_code VARCHAR(255),
-    auth_verification_code VARCHAR(255),
-    verification_url TEXT,
-    verification_url_full TEXT
-);
+CREATE TABLE `token_validation` (
+    `id` int NOT NULL AUTO_INCREMENT,
+    `client_id` varchar(255) NOT NULL,
+    `client_secret` varchar(255) NOT NULL,
+    `access_token` text NOT NULL,
+    `token_expiration` timestamp NOT NULL,
+    `refresh_token` text NOT NULL,
+    `user_code` varchar(255) DEFAULT NULL,
+    `authorization_code` varchar(255) DEFAULT NULL,
+    `auth_verification_code` varchar(255) DEFAULT NULL,
+    `verification_url` text,
+    `verification_url_full` text,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB AUTO_INCREMENT = 2 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
 
-CREATE TABLE lojas (
-    id_loja VARCHAR(36) PRIMARY KEY, -- Mudado para UUID
-    nome VARCHAR(255) NOT NULL,
-    status INT NOT NULL CHECK (status IN (0, 1, 2)), -- 0: Aberta, 1: Fechada por erro, 2: Fora do horário
-    horario_operacao TIME,
-    data_criacao DATE DEFAULT(CURRENT_DATE),
-    localizacao POINT
-);
+CREATE TABLE `lojas` (
+    `id_loja` char(36) NOT NULL,
+    `nome` varchar(255) NOT NULL,
+    `status` int NOT NULL,
+    `horario_operacao` time DEFAULT NULL,
+    `data_criacao` date DEFAULT(curdate()),
+    `localizacao` point DEFAULT NULL,
+    PRIMARY KEY (`id_loja`),
+    CONSTRAINT `lojas_chk_1` CHECK ((`status` in (0, 1, 2)))
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
 
 -- Tabela de vendas
-CREATE TABLE vendas (
-    id_venda VARCHAR(36) PRIMARY KEY, -- Mudado para UUID
-    id_loja VARCHAR(36), -- Mudado para UUID
-    data_hora TIMESTAMP NOT NULL,
-    valor_total DECIMAL(10, 2) NOT NULL,
-    ticket_medio DECIMAL(10, 2),
-    tipo_cliente INT CHECK (tipo_cliente IN (0, 1)),
-    cancelada BOOLEAN DEFAULT FALSE,
-    promocao_aplicada BOOLEAN DEFAULT FALSE,
-    roi DECIMAL(10, 2),
-    FOREIGN KEY (id_loja) REFERENCES lojas (id_loja)
-);
+CREATE TABLE `vendas` (
+    `id_venda` char(36) NOT NULL,
+    `id_loja` char(36) DEFAULT NULL,
+    `data_hora` timestamp NOT NULL,
+    `valor_total` decimal(10, 2) NOT NULL,
+    `ticket_medio` decimal(10, 2) DEFAULT NULL,
+    `tipo_cliente` int DEFAULT NULL,
+    `cancelada` tinyint(1) DEFAULT '0',
+    `promocao_aplicada` tinyint(1) DEFAULT '0',
+    `roi` decimal(10, 2) DEFAULT NULL,
+    PRIMARY KEY (`id_venda`),
+    KEY `id_loja` (`id_loja`),
+    CONSTRAINT `vendas_ibfk_1` FOREIGN KEY (`id_loja`) REFERENCES `lojas` (`id_loja`),
+    CONSTRAINT `vendas_chk_1` CHECK ((`tipo_cliente` in (0, 1)))
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
 
 -- Tabela de operações
-CREATE TABLE operacao (
-    id_operacao VARCHAR(36) PRIMARY KEY, -- Mudado para UUID
-    id_loja VARCHAR(36), -- Mudado para UUID
-    data_hora_inicio TIMESTAMP NOT NULL,
-    data_hora_fim TIMESTAMP,
-    tempo_total INT GENERATED ALWAYS AS (
-        TIMESTAMPDIFF(
+CREATE TABLE `operacao` (
+    `id_operacao` char(36) NOT NULL,
+    `id_loja` char(36) DEFAULT NULL,
+    `data_hora_inicio` timestamp NOT NULL,
+    `data_hora_fim` timestamp NULL DEFAULT NULL,
+    `tempo_total` int GENERATED ALWAYS AS (
+        timestampdiff(
             SECOND,
-            data_hora_inicio,
-            data_hora_fim
+            `data_hora_inicio`,
+            `data_hora_fim`
         )
     ) STORED,
-    cancelamentos INT DEFAULT 0,
-    erros_plataforma INT,
-    FOREIGN KEY (id_loja) REFERENCES lojas (id_loja)
-);
+    `cancelamentos` int DEFAULT '0',
+    `erros_plataforma` int DEFAULT NULL,
+    PRIMARY KEY (`id_operacao`),
+    KEY `id_loja` (`id_loja`),
+    CONSTRAINT `operacao_ibfk_1` FOREIGN KEY (`id_loja`) REFERENCES `lojas` (`id_loja`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
 
 -- Tabela de clientes
-CREATE TABLE clientes (
-    id_cliente VARCHAR(36) PRIMARY KEY, -- Mudado para UUID
-    nome VARCHAR(255),
-    id_loja VARCHAR(36), -- Mudado para UUID
-    distancia_raio DECIMAL(5, 2),
-    tipo_cliente INT CHECK (tipo_cliente IN (0, 1)), -- Alterado para corresponder à tabela de vendas
-    data_ultima_compra DATE,
-    FOREIGN KEY (id_loja) REFERENCES lojas (id_loja)
-);
+CREATE TABLE `clientes` (
+    `id_cliente` char(36) NOT NULL,
+    `nome` varchar(255) DEFAULT NULL,
+    `id_loja` char(36) DEFAULT NULL,
+    `distancia_raio` decimal(5, 2) DEFAULT NULL,
+    `tipo_cliente` int DEFAULT NULL,
+    `data_ultima_compra` date DEFAULT NULL,
+    PRIMARY KEY (`id_cliente`),
+    KEY `id_loja` (`id_loja`),
+    CONSTRAINT `clientes_ibfk_1` FOREIGN KEY (`id_loja`) REFERENCES `lojas` (`id_loja`),
+    CONSTRAINT `clientes_chk_1` CHECK ((`tipo_cliente` in (0, 1)))
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
