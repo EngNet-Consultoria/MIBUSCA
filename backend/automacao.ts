@@ -39,7 +39,35 @@ function parseDatabaseUrl(databaseUrl: string) {
 // Obter configuração do banco de dados
 const dbConfig = parseDatabaseUrl(process.env.DATABASE_URL!);
 
-// Função para obter o token
+// Função para verificar se um token válido já existe no banco de dados
+async function getValidToken(): Promise<TokenData | null> {
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+
+    const query = `
+      SELECT access_token AS accessToken, token_expiration AS expirationDate
+      FROM token_validation
+      WHERE client_id = ? AND client_secret = ? AND token_expiration > NOW()
+      LIMIT 1
+    `;
+
+    const [rows] = await connection.execute(query, [CLIENT_ID, CLIENT_SECRET]);
+    await connection.end();
+
+    if (Array.isArray(rows) && rows.length > 0) {
+      console.log('Token válido encontrado no banco de dados:', rows[0]);
+      return rows[0] as TokenData;
+    } else {
+      console.log('Nenhum token válido encontrado no banco de dados.');
+      return null;
+    }
+  } catch (error) {
+    console.error('Erro ao verificar o token no banco de dados:', (error as Error).message);
+    return null;
+  }
+}
+
+// Função para obter o token da API
 async function fetchAccessToken(): Promise<TokenData | null> {
   try {
     const data = qs.stringify({
@@ -111,10 +139,18 @@ async function saveTokenToDatabase(tokenData: TokenData) {
 
 // Fluxo principal
 (async function main() {
-  const tokenData = await fetchAccessToken();
-  if (tokenData) {
-    await saveTokenToDatabase(tokenData);
+  // Verifica se há um token válido no banco de dados
+  let tokenData = await getValidToken();
+
+  if (!tokenData) {
+    // Se não houver token válido, obtém um novo da API
+    tokenData = await fetchAccessToken();
+    if (tokenData) {
+      await saveTokenToDatabase(tokenData);
+    } else {
+      console.error('Falha ao obter ou salvar o token.');
+    }
   } else {
-    console.error('Falha ao obter ou salvar o token.');
+    console.log('Token reutilizado do banco de dados:', tokenData);
   }
 })();
