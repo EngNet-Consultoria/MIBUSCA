@@ -4,7 +4,7 @@ import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 
 // Carregar as variáveis de ambiente
-dotenv.config();
+dotenv.config({ path: '../.env' });
 
 // Configuração do endpoint e credenciais
 const API_URL = 'https://merchant-api.ifood.com.br/authentication/v1.0/oauth/token';
@@ -40,7 +40,7 @@ function parseDatabaseUrl(databaseUrl: string) {
 const dbConfig = parseDatabaseUrl(process.env.DATABASE_URL!);
 
 // Função para verificar se um token válido já existe no banco de dados
-async function getValidToken(): Promise<TokenData | null> {
+export async function getValidToken(): Promise<TokenData | null> {
   try {
     const connection = await mysql.createConnection(dbConfig);
 
@@ -68,7 +68,7 @@ async function getValidToken(): Promise<TokenData | null> {
 }
 
 // Função para obter o token da API
-async function fetchAccessToken(): Promise<TokenData | null> {
+export async function fetchAccessToken(): Promise<TokenData | null> {
   try {
     const data = qs.stringify({
       grantType: 'client_credentials',  
@@ -107,7 +107,7 @@ async function fetchAccessToken(): Promise<TokenData | null> {
 }
 
 // Função para salvar ou atualizar o token no banco de dados
-async function saveTokenToDatabase(tokenData: TokenData) {
+export async function saveTokenToDatabase(tokenData: TokenData) {
   try {
     const connection = await mysql.createConnection(dbConfig);
 
@@ -141,21 +141,3 @@ async function saveTokenToDatabase(tokenData: TokenData) {
     console.error('Erro ao salvar o token no banco de dados:', (error as Error).message);
   }
 }
-
-// Fluxo principal
-(async function main() {
-  // Verifica se há um token válido no banco de dados
-  let tokenData = await getValidToken();
-
-  if (!tokenData) {
-    // Se não houver token válido, obtém um novo da API
-    tokenData = await fetchAccessToken();
-    if (tokenData) {
-      await saveTokenToDatabase(tokenData);
-    } else {
-      console.error('Falha ao obter ou salvar o token.');
-    }
-  } else {
-    console.log('Token reutilizado do banco de dados:', tokenData);
-  }
-})();
