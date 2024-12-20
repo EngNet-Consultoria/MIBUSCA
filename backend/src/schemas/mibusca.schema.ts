@@ -6,7 +6,7 @@ export const TokenValidationSchema = z.object({
   client_id: z.string().max(255),
   client_secret: z.string().max(255),
   access_token: z.string(),
-  token_expiration: z.string().transform((str) => new Date(str)), // Converte string para Date
+  token_expiration: z.date(),
   refresh_token: z.string(),
   user_code: z.string().nullable().optional(),
   authorization_code: z.string().nullable().optional(),
@@ -17,46 +17,46 @@ export const TokenValidationSchema = z.object({
 
 // Schema de Lojas
 export const LojasSchema = z.object({
-  id_loja: z.number().int().positive().optional(), // id_loja pode ser opcional em alguns casos (por exemplo, criação)
+  id_loja: z.string().length(36), // Alterado para string com tamanho 36 (UUID)
   nome: z.string().max(255),
-  status: z.number().int().min(0).max(2), // 0: Aberta, 1: Fechada por erro, 2: Fora do horário
+  status: z.number().int().min(0).max(2),
   horario_operacao: z.string().optional(),
-  data_criacao: z.string().transform((str) => new Date(str)).optional(),
-  localizacao: z.string().optional(),
+  data_criacao: z.date().optional(),
+  localizacao: z.string().optional(), // Para ponto, pode ser uma string representando coordenadas
 });
 
 // Schema de Vendas
 export const VendasSchema = z.object({
-  id_venda: z.number().int().positive(),
-  id_loja: z.number().int().positive(),
-  data_hora: z.string().transform((str) => new Date(str)), // Converte string para Date
+  id_venda: z.string().length(36),
+  id_loja: z.string().length(36),
+  data_hora: z.date(),
   valor_total: z.number().positive(),
-  ticket_medio: z.number().optional(), // Pode ser nulo ou omitido
-  tipo_cliente: z.enum(["0", "1"]).transform(Number), // Converte string para número
+  ticket_medio: z.number().optional(),
+  tipo_cliente: z.enum(["0", "1"]).transform(Number),
   cancelada: z.boolean().optional().default(false),
   promocao_aplicada: z.boolean().optional().default(false),
-  roi: z.number().optional(), // Pode ser nulo ou omitido
+  roi: z.number().optional(),
 });
 
 // Schema de Operacao
 export const OperacaoSchema = z.object({
-  id_operacao: z.number().int().positive(),
-  id_loja: z.number().int().positive(),
-  data_hora_inicio: z.string().transform((str) => new Date(str)),
-  data_hora_fim: z.string().transform((str) => new Date(str)).optional(),
+  id_operacao: z.string().length(36),
+  id_loja: z.string().length(36),
+  data_hora_inicio: z.date(),
+  data_hora_fim: z.date().optional(),
   tempo_total: z.number().optional(),
   cancelamentos: z.number().int().optional().default(0),
-  erros_plataforma: z.number().int()
+  erros_plataforma: z.number().int(),
 });
 
 // Schema de Clientes
 export const ClientesSchema = z.object({
-  id_cliente: z.number().int().positive(),
+  id_cliente: z.string().length(36),
   nome: z.string().max(255).optional(),
-  id_loja: z.number().int().positive(),
+  id_loja: z.string().length(36),
   distancia_raio: z.number().positive(),
   tipo: z.enum(["0", "1"]).transform(Number),
-  data_ultima_compra: z.string().transform((str) => new Date(str)).optional(),
+  data_ultima_compra: z.date().optional(),
 });
 
 // Types

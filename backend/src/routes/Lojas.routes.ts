@@ -1,12 +1,35 @@
-import express, { Request, Response } from 'express';
-import { criarLoja, atualizarLoja, obterLojas, obterLojaPorId } from '../business/Lojas.bussines'; // Corrigir o caminho se necessário
+import { Router } from "express";
+import { createLoja, updateLoja, getLojas, getLojaById, deleteLoja } from "../business/Lojas.bussines";
+import { LojasSchema } from "../schemas/mibusca.schema"; // Validação com Zod ou qualquer outro schema
 
-const router = express.Router();
+const router = Router();
 
-// Rota para criar loja
-router.post('/lojas', async (req: Request, res: Response) => {
+// Rota para obter todas as lojas
+router.get("/", async (req, res) => {
   try {
-    const loja = await criarLoja(req.body); // Passando o corpo da requisição para a função criarLoja
+    const lojas = await getLojas();
+    res.status(200).json(lojas);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Rota para obter uma loja pelo ID
+router.get("/:id_loja", async (req, res) => {
+  const { id_loja } = req.params;
+  try {
+    const loja = await getLojaById(id_loja);
+    res.status(200).json(loja);
+  } catch (error) {
+    res.status(404).json({ error: error.message });
+  }
+});
+
+// Rota para criar uma nova loja
+router.post("/", async (req, res) => {
+  try {
+    const data = LojasSchema.parse(req.body); // Validação com Zod ou qualquer outra biblioteca de validação
+    const loja = await createLoja(data);
     res.status(201).json(loja);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -14,32 +37,25 @@ router.post('/lojas', async (req: Request, res: Response) => {
 });
 
 // Rota para atualizar uma loja
-router.put('/lojas/:id_loja', async (req: Request, res: Response) => {
+router.put("/:id_loja", async (req, res) => {
+  const { id_loja } = req.params;
   try {
-    const loja = await atualizarLoja(Number(req.params.id_loja), req.body); // Passando o ID da loja e o corpo da requisição
+    const data = LojasSchema.partial().parse(req.body); // Validação com Zod ou qualquer outra biblioteca de validação
+    const loja = await updateLoja(id_loja, data);
     res.status(200).json(loja);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
-// Rota para listar todas as lojas
-router.get('/lojas', async (_req: Request, res: Response) => {
+// Rota para deletar uma loja
+router.delete("/:id_loja", async (req, res) => {
+  const { id_loja } = req.params;
   try {
-    const lojas = await obterLojas();
-    res.status(200).json(lojas);
+    await deleteLoja(id_loja);
+    res.status(204).send(); 
   } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-// Rota para obter uma loja específica
-router.get('/lojas/:id_loja', async (req: Request, res: Response) => {
-  try {
-    const loja = await obterLojaPorId(Number(req.params.id_loja));
-    res.status(200).json(loja);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 });
 

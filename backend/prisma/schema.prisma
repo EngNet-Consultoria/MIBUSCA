@@ -14,55 +14,55 @@ model TokenValidation {
   access_token          String
   token_expiration      DateTime
   refresh_token         String
-  user_code             String?
-  authorization_code    String?
-  auth_verification_code String?
-  verification_url      String?
-  verification_url_full String?
+  user_code             String?  
+  authorization_code    String?  
+  auth_verification_code String? 
+  verification_url      String?  
+  verification_url_full String?  
 }
 
 model Lojas {
-  id_loja        Int      @id @default(autoincrement())
-  nome           String
-  status         Int      // Substituindo o enum por Int
-  horario_operacao DateTime?  // Está opcional
-  data_criacao   DateTime @default(now())
-  localizacao    Bytes?   // Para permitir null, usamos Bytes?
-  Vendas         Vendas[]
-  Operacoes      Operacao[]
-  Clientes       Clientes[]
+  id_loja      String   @id @default(cuid())
+  nome         String
+  status       Int
+  horario_operacao DateTime?  
+  data_criacao DateTime @default(now())
+  localizacao  Bytes?   
+  Vendas       Vendas[]
+  Operacoes    Operacao[]
+  Clientes     Clientes[]
 }
 
 model Vendas {
-  id_venda       Int      @id @default(autoincrement())
-  loja           Lojas    @relation(fields: [id_loja], references: [id_loja])
-  id_loja        Int
-  data_hora      DateTime
-  valor_total    Float
-  ticket_medio   Float?   // Substituindo o enum por Float? para aceitar nulos
-  tipo_cliente   Int      // Substituindo o enum por Int
-  cancelada      Boolean  @default(false)
+  id_venda     String   @id @default(cuid())
+  id_loja      String
+  loja         Lojas    @relation(fields: [id_loja], references: [id_loja])
+  data_hora    DateTime
+  valor_total  Float
+  ticket_medio Float?   
+  tipo_cliente Int
+  cancelada    Boolean  @default(false)
   promocao_aplicada Boolean @default(false)
-  roi            Float?
+  roi          Float?
 }
 
 model Operacao {
-  id_operacao    Int      @id @default(autoincrement())
-  loja           Lojas    @relation(fields: [id_loja], references: [id_loja])
-  id_loja        Int
+  id_operacao  String   @id @default(cuid())
+  id_loja      String
+  loja         Lojas    @relation(fields: [id_loja], references: [id_loja])
   data_hora_inicio DateTime
-  data_hora_fim   DateTime?
-  tempo_total     Int?    // TIMESTAMPDIFF será calculado na aplicação
-  cancelamentos   Int     @default(0)
+  data_hora_fim DateTime?
+  tempo_total   Int?   
+  cancelamentos Int     @default(0)
   erros_plataforma Int
 }
 
 model Clientes {
-  id_cliente     Int      @id @default(autoincrement())
-  nome           String?
-  loja           Lojas    @relation(fields: [id_loja], references: [id_loja])
-  id_loja        Int
+  id_cliente   String   @id @default(cuid())
+  nome         String?
+  id_loja      String
+  loja         Lojas    @relation(fields: [id_loja], references: [id_loja])
   distancia_raio Float
-  tipo           Int      // Substituindo o enum por Int
+  tipo         Int
   data_ultima_compra DateTime?
 }
