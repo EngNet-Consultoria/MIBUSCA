@@ -1,8 +1,8 @@
+
 import { getValidToken, fetchAccessToken, saveTokenToDatabase } from "./tokenvalidation";
 import { prisma } from '../src/prisma';
 
 
-// Fluxo principal
 (async function main() {
   try {
     // Verifica se há um token válido no banco de dados
@@ -23,5 +23,4 @@ import { prisma } from '../src/prisma';
     console.error("Erro no fluxo principal:", error);
   } finally {
     await prisma.$disconnect(); // Encerra o Prisma no final
-  }
-})();
+  }}

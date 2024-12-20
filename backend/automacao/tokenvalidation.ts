@@ -4,7 +4,9 @@ import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 
 // Carregar as variáveis de ambiente
-dotenv.config({ path: 'webdevolper/MIBUSCA/v2_0/.env' }); //TALVEZ DE ERRO SE MUDAR DE PLATAFORMA
+
+dotenv.config({ path: '../.env' });
+
 
 // Configuração do endpoint e credenciais
 const API_URL = 'https://merchant-api.ifood.com.br/authentication/v1.0/oauth/token';
@@ -38,7 +40,6 @@ function parseDatabaseUrl(databaseUrl: string) {
 
 // Obter configuração do banco de dados
 const dbConfig = parseDatabaseUrl(process.env.DATABASE_URL!);
-
 
 // Função para verificar se um token válido já existe no banco de dados
 export async function getValidToken(): Promise<TokenData | null> {
