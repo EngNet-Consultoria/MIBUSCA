@@ -55,7 +55,7 @@ export async function getValidToken(): Promise<TokenData | null> {
     await connection.end();
 
     if (Array.isArray(rows) && rows.length > 0) {
-      console.log('Token válido encontrado no banco de dados:', rows[0]);
+      console.log('Token válido encontrado no banco de dados');
       return rows[0] as TokenData;
     } else {
       console.log('Nenhum token válido encontrado no banco de dados.');
@@ -89,7 +89,7 @@ export async function fetchAccessToken(): Promise<TokenData | null> {
         .toISOString()
         .slice(0, 19) // Formato TIMESTAMP
         .replace('T', ' '); // Formato TIMESTAMP
-      console.log('Token obtido com sucesso:', accessToken);
+      console.log('Token obtido com sucesso:');
       return { accessToken, expirationDate };
     } else {
       console.error('Erro ao obter o token:', response.statusText);
