@@ -1,10 +1,14 @@
-
 import { getValidToken, fetchAccessToken, saveTokenToDatabase } from "./tokenvalidation";
-import { prisma } from '../src/prisma';
+import { prisma } from "../src/prisma";
+import { runTokenAutomation } from "../automacao/scheduler";
 
-
+// Fluxo principal
 (async function main() {
   try {
+    // Configura a automação antes de executar o fluxo principal
+    //console.log("Iniciando automação..."); usei para testes mas pode ser util
+    await runTokenAutomation(); 
+
     // Verifica se há um token válido no banco de dados
     let tokenData = await getValidToken();
 
@@ -22,5 +26,6 @@ import { prisma } from '../src/prisma';
   } catch (error) {
     console.error("Erro no fluxo principal:", error);
   } finally {
-    await prisma.$disconnect(); // Encerra o Prisma no final
-  }}
+    await prisma.$disconnect();   
+  }
+})();
