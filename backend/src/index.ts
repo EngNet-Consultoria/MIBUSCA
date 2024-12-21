@@ -13,8 +13,6 @@ import { handleCommonError } from "./middlewares/handleCommonError.middleware";
 import lojas from "./routes/Lojas.routes";
 import credenciais from "./routes/credenciais.routes";
 import vendas from "./routes/Vendas.routes";
-import clientes from "./routes/Clientes.routes";
-import operacao from "./routes/operacao.routes";
 
 
 dotenv.config();
@@ -30,6 +28,7 @@ app.use(helmet());
 // Incluindo as rotas
 app.use("/lojas", lojas);
 app.use("/credenciais", credenciais);
+app.use("/Vendas", vendas); 
 
 
 // Middleware de tratamento de erros

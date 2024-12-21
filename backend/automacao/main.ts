@@ -8,6 +8,11 @@ function logSuccess(message: string) {
   console.log(`\x1b[32m${message}\x1b[39m`); // Mensagens em verde
 }
 
+// Função para logar mensagens de erro em vermelho
+function logError(message: string) {
+  console.log(`\x1b[31m${message}\x1b[39m`); // Mensagens em vermelho
+}
+
 async function main() {
   const currentTime = new Date().toISOString(); // Data e hora atual em formato ISO
   executionCount++; // Incrementa o contador de execuções
@@ -26,7 +31,7 @@ async function main() {
         logSuccess(`[Execução ${executionCount}] - Novo token obtido com sucesso. Salvando no banco de dados...`);
         await saveTokenToDatabase(tokenData);
       } else {
-        console.error(`[Execução ${executionCount}] - Falha ao obter o token da API. Encerrando fluxo.`);
+        logError(`[Execução ${executionCount}] - Falha ao obter o token da API. Encerrando fluxo.`);
         return;
       }
     } else {
@@ -51,7 +56,7 @@ async function main() {
       console.log(`[Execução ${executionCount}] - Nenhuma loja foi encontrada na API. Fluxo concluído.`);
     }
   } catch (error) {
-    console.error(`[Execução ${executionCount}] - Erro no fluxo principal em ${currentTime}:`, error);
+    logError(`[Execução ${executionCount}] - Erro no fluxo principal em ${currentTime}: ${error}`);
   }
 }
 

@@ -1,136 +1,134 @@
 import { PrismaClient } from "@prisma/client";
+import { z } from "zod";
 import { Lojas } from "../schemas/mibusca.schema";
 
 const prisma = new PrismaClient();
 
-// Tipo da loja
-type LojaComCoordenadas = {
-  id_loja: string;
-  nome: string;
-  status: number;
-  data_criacao: string | null;
-  localizacao: Buffer | null;
-  latitude: number | null;
-  longitude: number | null;
-};
+// Schema para validar loja com coordenadas
+const LojaComCoordenadasSchema = z.object({
+  id_loja: z.string(),
+  nome: z.string(),
+  status: z.number().int(),
+  data_criacao: z.date().nullable(),
+  latitude: z.number().nullable(),
+  longitude: z.number().nullable(),
+  localizacao: z.instanceof(Buffer).nullable(),
+});
+
+type LojaComCoordenadas = z.infer<typeof LojaComCoordenadasSchema>;
 
 // Função para obter todas as lojas
 export const getLojas = async (): Promise<LojaComCoordenadas[]> => {
   try {
-    const lojas = await prisma.lojas.findMany();
-
-    return lojas.map(({ localizacao, data_criacao, id_loja, ...resto }) => {
-      const latitude = localizacao ? localizacao.readDoubleLE(0) : null;
-      const longitude = localizacao ? localizacao.readDoubleLE(8) : null;
-      return {
-        ...resto,
-        id_loja: String(id_loja),
-        data_criacao: data_criacao ? new Date(data_criacao).toISOString() : null,
-        latitude,
-        longitude,
+    const lojas = await prisma.$queryRaw<LojaComCoordenadas[]>`
+      SELECT 
+        id_loja, 
+        nome, 
+        status, 
+        data_criacao, 
+        ST_Y(localizacao) AS latitude, 
+        ST_X(localizacao) AS longitude,
         localizacao
-      };
-    });
+      FROM lojas;
+    `;
+
+    return lojas.map(loja => LojaComCoordenadasSchema.parse(loja));
   } catch (error) {
-    throw new Error(`Erro ao obter lojas: ${error.message}`);
+    throw new Error(`Erro ao obter lojas: ${error instanceof Error ? error.message : String(error)}`);
   }
 };
 
-// Função para obter uma loja específica pelo ID
+// Função para obter uma loja pelo ID
 export const getLojaById = async (id_loja: string): Promise<LojaComCoordenadas | null> => {
   try {
-    const loja = await prisma.lojas.findUnique({
-      where: { id_loja: String(id_loja) }, // Garantindo que id_loja seja uma string
-    });
+    const loja = await prisma.$queryRaw<LojaComCoordenadas[]>`
+      SELECT 
+        id_loja, 
+        nome, 
+        status, 
+        data_criacao, 
+        ST_Y(localizacao) AS latitude, 
+        ST_X(localizacao) AS longitude,
+        localizacao
+      FROM lojas
+      WHERE id_loja = ${id_loja};
+    `;
 
-    if (!loja) {
-      throw new Error("Loja não encontrada");
-    }
-
-    const latitude = loja.localizacao ? loja.localizacao.readDoubleLE(0) : null;
-    const longitude = loja.localizacao ? loja.localizacao.readDoubleLE(8) : null;
-
-    return {
-      ...loja,
-      id_loja: String(loja.id_loja),
-      data_criacao: loja.data_criacao ? new Date(loja.data_criacao).toISOString() : null,
-      latitude,
-      longitude,
-      localizacao: loja.localizacao
-    };
+    if (!loja.length) return null;
+    return LojaComCoordenadasSchema.parse(loja[0]);
   } catch (error) {
-    throw new Error(`Erro ao obter loja: ${error.message}`);
+    throw new Error(`Erro ao obter loja: ${error instanceof Error ? error.message : String(error)}`);
   }
 };
 
 // Função para criar uma nova loja
 export const createLoja = async (data: Lojas): Promise<LojaComCoordenadas> => {
   try {
-    const loja = await prisma.lojas.create({
-      data: {
-        ...data,
-        localizacao: data.localizacao ? Buffer.from(data.localizacao) : null,
-      },
-    });
+    const loja = await prisma.$queryRaw<LojaComCoordenadas[]>`
+      INSERT INTO lojas (nome, status, data_criacao, localizacao)
+      VALUES (
+        ${data.nome}, 
+        ${data.status}, 
+        ${data.data_criacao}, -- 'data_criacao' aceita diretamente timestamps
+        ${
+          data.localizacao
+            ? Buffer.from(data.localizacao)
+            : null
+        }
+      )
+      RETURNING id_loja, nome, status, data_criacao, ST_Y(localizacao) AS latitude, ST_X(localizacao) AS longitude, localizacao;
+    `;
 
-    const latitude = loja.localizacao ? loja.localizacao.readDoubleLE(0) : null;
-    const longitude = loja.localizacao ? loja.localizacao.readDoubleLE(8) : null;
+    if (!loja.length) {
+      throw new Error("Erro ao criar loja: Nenhuma loja retornada.");
+    }
 
-    return {
-      ...loja,
-      id_loja: String(loja.id_loja),
-      latitude,
-      longitude,
-      data_criacao: loja.data_criacao ? new Date(loja.data_criacao).toISOString() : null,
-      localizacao: loja.localizacao
-    };
+    return LojaComCoordenadasSchema.parse(loja[0]);
   } catch (error) {
-    throw new Error(`Erro ao criar loja: ${error.message}`);
+    throw new Error(`Erro ao criar loja: ${error instanceof Error ? error.message : String(error)}`);
   }
 };
 
 // Função para atualizar uma loja
-export const updateLoja = async (id_loja: string, data: Partial<Lojas>): Promise<LojaComCoordenadas> => {
+export const updateLoja = async (id_loja: string, data: Partial<Lojas>): Promise<LojaComCoordenadas | null> => {
   try {
-    const loja = await prisma.lojas.update({
-      where: { id_loja },
-      data: {
-        ...data,
-        localizacao: data.localizacao ? Buffer.from(data.localizacao) : null,
-      },
-    });
+    const loja = await prisma.$queryRaw<LojaComCoordenadas[]>`
+      UPDATE lojas
+      SET 
+        nome = ${data.nome || null}, 
+        status = ${data.status || null}, 
+        data_criacao = ${data.data_criacao || null}, -- Direto para timestamp
+        localizacao = ${
+          data.localizacao
+            ? Buffer.from(data.localizacao)
+            : null
+        }
+      WHERE id_loja = ${id_loja}
+      RETURNING id_loja, nome, status, data_criacao, ST_Y(localizacao) AS latitude, ST_X(localizacao) AS longitude, localizacao;
+    `;
 
-    const latitude = loja.localizacao ? loja.localizacao.readDoubleLE(0) : null;
-    const longitude = loja.localizacao ? loja.localizacao.readDoubleLE(8) : null;
-
-    return {
-      ...loja,
-      id_loja: String(loja.id_loja),
-      latitude,
-      longitude,
-      data_criacao: loja.data_criacao ? new Date(loja.data_criacao).toISOString() : null,
-      localizacao: loja.localizacao
-    };
+    if (!loja.length) return null;
+    return LojaComCoordenadasSchema.parse(loja[0]);
   } catch (error) {
-    throw new Error(`Erro ao atualizar loja: ${error.message}`);
+    throw new Error(`Erro ao atualizar loja: ${error instanceof Error ? error.message : String(error)}`);
   }
 };
 
 // Função para deletar uma loja
 export const deleteLoja = async (id_loja: string): Promise<void> => {
   try {
-    const lojaExistente = await prisma.lojas.findUnique({
-      where: { id_loja }
-    });
+    const lojaExistente = await prisma.$queryRaw<LojaComCoordenadas[]>`
+      SELECT id_loja FROM lojas WHERE id_loja = ${id_loja};
+    `;
 
-    if (!lojaExistente) {
-      throw new Error("Loja não encontrada");
+    if (!lojaExistente.length) {
+      throw new Error("Loja não encontrada.");
     }
 
-    await prisma.lojas.delete({
-      where: { id_loja }
-    });
+    await prisma.$queryRaw`
+      DELETE FROM lojas WHERE id_loja = ${id_loja};
+    `;
   } catch (error) {
-    throw new Error(`Erro ao deletar loja: ${error.message}`);
+    throw new Error(`Erro ao deletar loja: ${error instanceof Error ? error.message : String(error)}`);
   }
 };

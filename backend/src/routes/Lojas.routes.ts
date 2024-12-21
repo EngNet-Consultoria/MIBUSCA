@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { createLoja, updateLoja, getLojas, getLojaById, deleteLoja } from "../business/Lojas.bussines";
-import { LojasSchema } from "../schemas/mibusca.schema"; // Validação com Zod ou qualquer outro schema
+import { LojasSchema } from "../schemas/mibusca.schema";
 
 const router = Router();
 
@@ -10,7 +10,8 @@ router.get("/", async (req, res) => {
     const lojas = await getLojas();
     res.status(200).json(lojas);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Erro ao obter lojas:", error);
+    res.status(500).json({ error: "Erro interno ao buscar lojas" });
   }
 });
 
@@ -19,20 +20,30 @@ router.get("/:id_loja", async (req, res) => {
   const { id_loja } = req.params;
   try {
     const loja = await getLojaById(id_loja);
-    res.status(200).json(loja);
+    if (loja) {
+      res.status(200).json(loja);
+    } else {
+      res.status(404).json({ error: "Loja não encontrada" });
+    }
   } catch (error) {
-    res.status(404).json({ error: error.message });
+    console.error(`Erro ao buscar loja com ID ${id_loja}:`, error);
+    res.status(500).json({ error: "Erro interno ao buscar loja" });
   }
 });
 
 // Rota para criar uma nova loja
 router.post("/", async (req, res) => {
   try {
-    const data = LojasSchema.parse(req.body); // Validação com Zod ou qualquer outra biblioteca de validação
+    const data = LojasSchema.parse(req.body); // Validação de entrada com Zod
     const loja = await createLoja(data);
     res.status(201).json(loja);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error("Erro ao criar loja:", error);
+    if (error.name === "ZodError") {
+      res.status(400).json({ error: "Dados inválidos", details: error.errors });
+    } else {
+      res.status(500).json({ error: "Erro interno ao criar loja" });
+    }
   }
 });
 
@@ -40,11 +51,20 @@ router.post("/", async (req, res) => {
 router.put("/:id_loja", async (req, res) => {
   const { id_loja } = req.params;
   try {
-    const data = LojasSchema.partial().parse(req.body); // Validação com Zod ou qualquer outra biblioteca de validação
+    const data = LojasSchema.partial().parse(req.body); // Validação parcial com Zod
     const loja = await updateLoja(id_loja, data);
-    res.status(200).json(loja);
+    if (loja) {
+      res.status(200).json(loja);
+    } else {
+      res.status(404).json({ error: "Loja não encontrada para atualização" });
+    }
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error(`Erro ao atualizar loja com ID ${id_loja}:`, error);
+    if (error.name === "ZodError") {
+      res.status(400).json({ error: "Dados inválidos", details: error.errors });
+    } else {
+      res.status(500).json({ error: "Erro interno ao atualizar loja" });
+    }
   }
 });
 
@@ -53,9 +73,14 @@ router.delete("/:id_loja", async (req, res) => {
   const { id_loja } = req.params;
   try {
     await deleteLoja(id_loja);
-    res.status(204).send(); 
+    res.status(204).send();
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(`Erro ao deletar loja com ID ${id_loja}:`, error);
+    if (error.message.includes("não encontrada")) {
+      res.status(404).json({ error: "Loja não encontrada para exclusão" });
+    } else {
+      res.status(500).json({ error: "Erro interno ao excluir loja" });
+    }
   }
 });
 

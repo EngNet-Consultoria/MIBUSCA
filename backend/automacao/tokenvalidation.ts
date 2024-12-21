@@ -45,7 +45,9 @@ export async function getValidToken(): Promise<TokenData | null> {
     const connection = await mysql.createConnection(dbConfig);
 
     const query = `
-      SELECT access_token AS accessToken, token_expiration AS expirationDate
+      SELECT 
+        access_token AS accessToken, 
+        token_expiration AS expirationDate
       FROM TokenValidation
       WHERE client_id = ? AND client_secret = ? AND token_expiration > NOW()
       LIMIT 1
@@ -70,18 +72,11 @@ export async function getValidToken(): Promise<TokenData | null> {
 // Função para obter o token da API
 export async function fetchAccessToken(): Promise<TokenData | null> {
   try {
-    // Dados para a requisição no formato correto (cURL)
     const data = qs.stringify({
       grantType: 'client_credentials',
       clientId: CLIENT_ID,
       clientSecret: CLIENT_SECRET,
-      authorizationCode: '', // Se necessário, preencher aqui
-      authorizationCodeVerifier: '', // Se necessário, preencher aqui
-      refreshToken: '', // Se necessário, preencher aqui
     });
-
-    // Verificar os dados antes de enviar a requisição
-    console.log('Dados para requisição:', data);
 
     const response = await axios.post(API_URL, data, {
       headers: {
@@ -104,7 +99,6 @@ export async function fetchAccessToken(): Promise<TokenData | null> {
     }
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      // Exibe detalhes sobre o erro no Axios
       console.error('Erro na requisição:', error.response?.data || error.message);
     } else {
       console.error('Erro desconhecido:', (error as Error).message);
@@ -116,6 +110,10 @@ export async function fetchAccessToken(): Promise<TokenData | null> {
 // Função para salvar ou atualizar o token no banco de dados
 export async function saveTokenToDatabase(tokenData: TokenData) {
   try {
+    if (!CLIENT_ID || !CLIENT_SECRET || !tokenData.accessToken || !tokenData.expirationDate) {
+      throw new Error('Um ou mais parâmetros estão indefinidos ao salvar o token no banco de dados.');
+    }
+
     const connection = await mysql.createConnection(dbConfig);
 
     const query = `
@@ -130,11 +128,18 @@ export async function saveTokenToDatabase(tokenData: TokenData) {
         token_expiration = VALUES(token_expiration)
     `;
 
+    console.log('Salvando token no banco de dados:', {
+      clientId: CLIENT_ID,
+      clientSecret: CLIENT_SECRET,
+      accessToken: tokenData.accessToken,
+      expirationDate: tokenData.expirationDate,
+    });
+
     await connection.execute(query, [
       CLIENT_ID,
       CLIENT_SECRET,
       tokenData.accessToken,
-      tokenData.expirationDate, // Diretamente como string formatada
+      tokenData.expirationDate,
     ]);
 
     console.log('Token salvo no banco de dados com sucesso!');
@@ -143,23 +148,3 @@ export async function saveTokenToDatabase(tokenData: TokenData) {
     console.error('Erro ao salvar o token no banco de dados:', (error as Error).message);
   }
 }
-
-// Fluxo principal para buscar o token
-export async function main() {
-  let token = await getValidToken();
-
-  if (!token) {
-    console.log('Nenhum token válido encontrado, obtendo novo token...');
-    token = await fetchAccessToken();
-
-    if (token) {
-      console.log('Salvando o token no banco de dados...');
-      await saveTokenToDatabase(token);
-    } else {
-      console.error('Falha ao obter o token da API. Encerrando fluxo.');
-    }
-  } else {
-    console.log('Token válido já encontrado:', token.accessToken);
-  }
-}
-

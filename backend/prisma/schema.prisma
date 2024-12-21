@@ -8,61 +8,35 @@ datasource db {
 }
 
 model TokenValidation {
-  id                    Int      @id @default(autoincrement())
-  client_id             String
-  client_secret         String
-  access_token          String
-  token_expiration      DateTime
-  refresh_token         String
-  user_code             String?  
-  authorization_code    String?  
-  auth_verification_code String? 
-  verification_url      String?  
-  verification_url_full String?  
+  id              Int      @id @default(autoincrement())
+  client_id       String   @db.VarChar(191)
+  client_secret   String   @db.VarChar(191)
+  access_token    String   @db.VarChar(191)
+  token_expiration DateTime
 }
 
 model Lojas {
-  id_loja      String   @id @default(cuid())
-  nome         String
-  status       Int
-  horario_operacao DateTime?  
-  data_criacao DateTime @default(now())
-  localizacao  Bytes?   
-  Vendas       Vendas[]
-  Operacoes    Operacao[]
-  Clientes     Clientes[]
+  id_loja         String   @id @db.VarChar(191)
+  nome            String   @db.VarChar(191)
+  status          Int
+  horario_operacao DateTime?
+  data_criacao    DateTime @default(now())
+  localizacao     Bytes?
+  Vendas          Vendas[]
 }
 
 model Vendas {
-  id_venda     String   @id @default(cuid())
-  id_loja      String
-  loja         Lojas    @relation(fields: [id_loja], references: [id_loja])
-  data_hora    DateTime
-  valor_total  Float
-  ticket_medio Float?   
-  tipo_cliente Int
-  cancelada    Boolean  @default(false)
+  id_venda        String   @id @db.VarChar(191)
+  id_cliente      String   @db.VarChar(191)
+  id_loja         String   @db.VarChar(191)
+  distancia_raio  Float
+  data_hora       DateTime
+  valor_total     Float
+  ticket_medio    Float?
+  tipo_cliente    Int
+  cancelada       Boolean  @default(false)
   promocao_aplicada Boolean @default(false)
-  roi          Float?
-}
-
-model Operacao {
-  id_operacao  String   @id @default(cuid())
-  id_loja      String
-  loja         Lojas    @relation(fields: [id_loja], references: [id_loja])
-  data_hora_inicio DateTime
-  data_hora_fim DateTime?
-  tempo_total   Int?   
-  cancelamentos Int     @default(0)
-  erros_plataforma Int
-}
-
-model Clientes {
-  id_cliente   String   @id @default(cuid())
-  nome         String?
-  id_loja      String
-  loja         Lojas    @relation(fields: [id_loja], references: [id_loja])
-  distancia_raio Float
-  tipo         Int
-  data_ultima_compra DateTime?
+  cancelamentos   Int      @default(0)
+  erros_plataforma Int      @default(0)
+  loja            Lojas    @relation(fields: [id_loja], references: [id_loja])
 }
