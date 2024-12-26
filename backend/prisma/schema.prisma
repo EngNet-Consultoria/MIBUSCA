@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model TokenValidation {
+  id               Int      @id @default(autoincrement())
+  client_id        String   @db.VarChar(191)
+  client_secret    String   @db.VarChar(191)
+  access_token     String   @db.VarChar(191)
+  token_expiration DateTime
+}
+
+model Lojas {
+  id_loja          String   @id @db.VarChar(191)
+  nome             String   @db.VarChar(191)
+  status           Int
+  horario_operacao DateTime?
+  data_criacao     DateTime @default(now())
+  localizacao      Bytes?
+  Vendas           Vendas[]
+  Clientes         Cliente[] // Relacionamento com clientes
+}
+
+model Vendas {
+  id_venda         String   @id @db.VarChar(191)
+  id_cliente       String   @db.VarChar(191)
+  id_loja          String   @db.VarChar(191)
+  distancia_raio   Float
+  data_hora        DateTime
+  valor_total      Float
+  ticket_medio     Float?
+  tipo_cliente     Int
+  cancelada        Boolean  @default(false)
+  promocao_aplicada Boolean @default(false)
+  cancelamentos    Int      @default(0)
+  erros_plataforma Int      @default(0)
+  loja             Lojas    @relation(fields: [id_loja], references: [id_loja])
+}
+
+model Cliente {
+  id_cliente         String   @id @db.VarChar(191)
+  nome               String   @db.VarChar(191)
+  email              String   @unique @db.VarChar(191)
+  telefone           String?  @db.VarChar(20)
+  status             Boolean  @default(true)
+  data_cadastro      DateTime @default(now())
+  id_loja            String   @db.VarChar(191) // Chave estrangeira para lojas
+  distancia_raio     Float
+  tipo               Int      @default(0) // Tipos possíveis: 0, 1, 2
+  data_ultima_compra DateTime?
+
+  loja               Lojas    @relation(fields: [id_loja], references: [id_loja])
+}
