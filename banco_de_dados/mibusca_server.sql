@@ -29,14 +29,11 @@ CREATE TABLE `Vendas` (
     `id_cliente` VARCHAR(191) NOT NULL,
     `id_loja` VARCHAR(191) NOT NULL,
     `distancia_raio` DOUBLE NOT NULL,
-    `data_hora` DATETIME(3) NOT NULL,
-    `valor_total` DOUBLE NOT NULL,
-    `ticket_medio` DOUBLE NULL,
-    `tipo_cliente` INT NOT NULL, -- Alterado para INT
-    `cancelada` BOOLEAN NOT NULL DEFAULT FALSE,
-    `promocao_aplicada` BOOLEAN NOT NULL DEFAULT FALSE,
-    `cancelamentos` INT NOT NULL DEFAULT 0, -- Alterado para INT
-    `erros_plataforma` INT NOT NULL DEFAULT 0, -- Alterado para INT
+    `data_hora` DATETIME NOT NULL,  -- Mantido como DATETIME
+    `cancelada` INT NOT NULL,
+    `tipo_cliente` INT NOT NULL,
+    `taxa_entrega` DOUBLE NOT NULL,
+    `total_pedido` DOUBLE NOT NULL,
     PRIMARY KEY (`id_venda`),
     CONSTRAINT `Vendas_id_loja_fkey` FOREIGN KEY (`id_loja`) REFERENCES `Lojas` (`id_loja`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

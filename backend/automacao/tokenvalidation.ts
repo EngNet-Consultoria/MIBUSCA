@@ -148,3 +148,31 @@ export async function saveTokenToDatabase(tokenData: TokenData) {
     console.error('Erro ao salvar o token no banco de dados:', (error as Error).message);
   }
 }
+export async function delete_TokenInvalidos() {
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+
+    const query = `
+      DELETE FROM TokenValidation
+      WHERE client_id = ? 
+        AND client_secret = ? 
+        AND token_expiration <= NOW()
+    `;
+
+    console.log('Tentando deletar tokens inválidos do banco de dados para:', {
+      clientId: CLIENT_ID,
+      clientSecret: CLIENT_SECRET,
+    });
+
+    const [result]: any = await connection.execute(query, [CLIENT_ID, CLIENT_SECRET]);
+
+    console.log(`Tokens inválidos deletados: ${result.affectedRows}`);
+    await connection.end();
+
+    if (result.affectedRows === 0) {
+      console.warn('Nenhum token inválido foi deletado. Verifique as condições no banco de dados.');
+    }
+  } catch (error) {
+    console.error('Erro ao deletar tokens inválidos:', (error as Error).message);
+  }
+}
