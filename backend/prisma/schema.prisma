@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model TokenValidation {
+  id              Int      @id @default(autoincrement())
+  client_id       String   @db.VarChar(191)
+  client_secret   String   @db.VarChar(191)
+  access_token    String   @db.VarChar(191)
+  token_expiration DateTime
+}
+
+model Lojas {
+  id_loja         String   @id @db.VarChar(191)
+  nome            String   @db.VarChar(191)
+  status          Int
+  horario_operacao DateTime?
+  data_criacao    DateTime @default(now())
+  localizacao     Bytes?
+  Vendas          Vendas[]
+}
+
+model Vendas {
+  id_venda        String   @id @db.VarChar(191)
+  id_cliente      String   @db.VarChar(191)
+  id_loja         String   @db.VarChar(191)
+  data_hora       DateTime
+  valor_total     Float
+  total_geral     Float   
+  ticket_medio    Float?
+  tipo_cliente    Int
+  cancelada       Boolean  @default(false)
+  promocao_aplicada Boolean @default(false)
+  cancelamentos   Int      @default(0)
+  erros_plataforma Int      @default(0)
+  promocao        String?  @db.VarChar(191) 
+  loja            Lojas    @relation(fields: [id_loja], references: [id_loja])
+}
